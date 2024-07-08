@@ -1,27 +1,25 @@
-import data
-from sandwich_maker import SandwichMaker
-from cashier import Cashier
+from typing import Union
 
-def main():
-    resources = data.resources
-    recipes = data.recipes
-    sandwich_maker_instance = SandwichMaker(resources)
-    cashier_instance = Cashier()
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-    is_on = True
+app = FastAPI()
 
-    while is_on:
-        choice = input("What would you like? (small/medium/large): ").lower()
-        if choice == "off":
-            is_on = False
-        elif choice in recipes:
-            sandwich = recipes[choice]
-            if sandwich_maker_instance.check_resources(sandwich["ingredients"]):
-                payment = cashier_instance.process_coins()
-                if cashier_instance.transaction_result(payment, sandwich["cost"]):
-                    sandwich_maker_instance.make_sandwich(choice, sandwich["ingredients"])
-        else:
-            print("Invalid choice. Please choose small, medium, or large.")
+class Item(BaseModel):
+    name: str
+    price: float
+    is_offer: Union[bool, None] = None
 
-if __name__ == "__main__":
-    main()
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: Union[str, None] = None):
+    return {"item_id": item_id, "q": q}
+
+
+@app.put("/items/{item_id}")
+def update_item(item_id: int, item: Item):
+    return {"item_name": item.name, "item_id": item_id}
